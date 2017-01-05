@@ -3,6 +3,7 @@ package info.androidhive.retrofit.activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -14,55 +15,47 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.IOException;
+import org.w3c.dom.Text;
+
 import java.util.List;
 
 import info.androidhive.retrofit.R;
 import info.androidhive.retrofit.adapter.MoviesAdapter;
-import info.androidhive.retrofit.model.Movie;
-import info.androidhive.retrofit.model.MoviesResponse;
+import info.androidhive.retrofit.interfaces.CustomItemClickListener;
 import info.androidhive.retrofit.model.OmdbMovie;
 import info.androidhive.retrofit.model.OmdbMoviesResponse;
-import info.androidhive.retrofit.rest.ApiClient;
 import info.androidhive.retrofit.rest.ApiClientOmdb;
-import info.androidhive.retrofit.rest.ApiInterface;
 import info.androidhive.retrofit.rest.ApiInterfaceOmdb;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import static android.R.attr.data;
+
 public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    MoviesAdapter adapter;
-
     RecyclerView recyclerView;
-    // TODO - insert your themoviedb.org API KEY here
-    private final static String API_KEY = "7e8f60e325cd06e164799af1e317d7a7";
-
-    Context mContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
-        handleIntent(getIntent());
-
         recyclerView = (RecyclerView) findViewById(R.id.movies_recycler_view);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-
+//metodo que inicia a busca
+        handleIntent(getIntent());
+        recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
+        // exibe a barra de busca no topo
         getMenuInflater().inflate(R.menu.menu_main, menu);
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         MenuItem searchItem = menu.findItem(R.id.search);
 
         SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
@@ -71,8 +64,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     private void handleIntent(Intent intent) {
+        //esse metodo pega do OnCreatOptionsMenu os valores que foram inseridos na barra de pesquisa
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
+            //ativa o metodo onQueryTextSubmit com os valores encontrados na barra de busca
             onQueryTextSubmit(query);
         }
     }
@@ -80,8 +75,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     @Override
     public boolean onQueryTextSubmit(String query) {
 
-        String s = query;
-        String format = "json";
+        String s = query; //esse foi o parametro enviado para o metodo
+        String format = "json";//essa variavel permanecerá estatica porque eu quero que o formato do arquivo seja json
+        //e também na classe ApiInterfaceOmdb me pede dois parametros para busca
 
         ApiInterfaceOmdb apiService =
                 ApiClientOmdb.getClient().create(ApiInterfaceOmdb.class);
@@ -91,14 +87,18 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         call.enqueue(new Callback<OmdbMoviesResponse>() {
             @Override
             public void onResponse(Call<OmdbMoviesResponse> call, Response<OmdbMoviesResponse> response) {
-                int statusCode = response.code();
+               TextView textView = (TextView) findViewById(R.id.erro_na_busca);
                 List<OmdbMovie> movies = response.body().getResults();
-                recyclerView.setAdapter(new MoviesAdapter(movies, R.layout.list_item_movie, getApplicationContext()));
+                if (movies != null){
+                    textView.setText("");
+                    recyclerView.setAdapter(new MoviesAdapter(movies, R.layout.list_item_movie, getApplicationContext()));
+                } else{
+                textView.setText(R.string.erro_busca);}
             }
 
             @Override
             public void onFailure(Call<OmdbMoviesResponse> call, Throwable t) {
-                // Log error here since request failed
+                // Log erro caso a busca retorne algum erro como 400 ou  404
                 Log.e(TAG, t.toString());
             }
         });
@@ -110,5 +110,5 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         return false;
     }
 
-    }
+}
 
