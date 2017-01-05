@@ -55,32 +55,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         recyclerView = (RecyclerView) findViewById(R.id.movies_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-//        recyclerView.addOnItemTouchListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                OmdbMovie movie = adapter.getItemCount(id);
-//                ((Callback) mContext).onItemSelected(movie);
-//            }
-//        });
 
-//        ApiInterfaceOmdb apiService =
-//                ApiClientOmdb.getClient().create(ApiInterfaceOmdb.class);
-//
-//        Call<OmdbMoviesResponse> call = apiService.search(s, format);
-//        call.enqueue(new Callback<OmdbMoviesResponse>() {
-//            @Override
-//            public void onResponse(Call<OmdbMoviesResponse> call, Response<OmdbMoviesResponse> response) {
-//                int statusCode = response.code();
-//                List<OmdbMovie> movies = response.body().getResults();
-//                recyclerView.setAdapter(new MoviesAdapter(movies, R.layout.list_item_movie, getApplicationContext()));
-//            }
-//
-//            @Override
-//            public void onFailure(Call<OmdbMoviesResponse> call, Throwable t) {
-//                // Log error here since request failed
-//                Log.e(TAG, t.toString());
-//            }
-//        });
     }
 
     @Override
